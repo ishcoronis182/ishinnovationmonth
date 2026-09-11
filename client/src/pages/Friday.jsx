@@ -71,7 +71,7 @@ function FridayCard({ card, saturdayLabel }) {
           <strong>What {card.firstName} will hear</strong>
           <span>
             {card.agentHears.settledThisMonth} settled, {card.agentHears.inFlight} in flight,
-            {' '}{card.agentHears.total} deals in total.
+            {' '}{card.agentHears.total} {card.agentHears.total === 1 ? 'deal' : 'deals'} in total.
           </span>
           <span className="small">
             Counts only deals where the client agreed we can share status.
@@ -82,7 +82,7 @@ function FridayCard({ card, saturdayLabel }) {
           <strong>Your register</strong>
           <span>
             {card.registerCount.settledThisMonth} settled, {card.registerCount.inFlight} in flight,
-            {' '}{card.registerCount.total} deals in total.
+            {' '}{card.registerCount.total} {card.registerCount.total === 1 ? 'deal' : 'deals'} in total.
           </span>
           {card.consentGap > 0
             ? <span className="small" style={{ color: 'var(--amber)' }}>
@@ -114,7 +114,7 @@ function FridayCard({ card, saturdayLabel }) {
         <Field label="Edit before it goes" id={`nudge-${card.partnerId}`}>
           <textarea
             id={`nudge-${card.partnerId}`}
-            rows={4}
+            rows={5}
             value={sms}
             onChange={(e) => { setSms(e.target.value); setSent(false); }}
           />
