@@ -1,0 +1,51 @@
+# Render blueprint for PARTNER PULSE.
+# Deploy: point Render at this repository and it will pick this file up.
+# Set PULSE_PASSCODE and PULSE_PUBLIC_URL in the dashboard before sharing the link.
+services:
+  - type: web
+    name: partner-pulse
+    runtime: node
+    plan: starter
+    region: singapore
+    buildCommand: npm install && npm run build
+    startCommand: node server/index.js
+    healthCheckPath: /api/health
+    autoDeploy: false
+    disk:
+      name: pulse-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: PULSE_DATA_DIR
+        value: /var/data
+      - key: PULSE_TZ
+        value: Australia/Brisbane
+      - key: PULSE_FIRM_NAME
+        value: Coronis Finance
+      - key: PULSE_BROKER_NAME
+        value: Nathan
+      - key: PULSE_OFFICE
+        value: Coronis Lutwyche
+      - key: PULSE_SEED_DEMO
+        value: "true"
+      - key: PULSE_SMS_PROVIDER
+        value: log
+      - key: PULSE_EMAIL_PROVIDER
+        value: log
+      # Set these in the Render dashboard, not here.
+      - key: PULSE_PASSCODE
+        sync: false
+      - key: PULSE_PUBLIC_URL
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: PULSE_MODEL
+        value: claude-opus-5
+      - key: PULSE_AI_EFFORT
+        value: medium
+      - key: PULSE_SECURE_COOKIE
+        value: "true"
