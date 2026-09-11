@@ -608,6 +608,46 @@ describe('reopening a settled deal', () => {
     expect(deal.payload.deal.referralComms.statementId).toBeNull();
   });
 
+  it('shows a draft the live numbers and freezes them at issue', async () => {
+    const fresh = await makeApp();
+    try {
+      const period = previousMonthKey(monthKey(fresh.today));
+      const generated = await fresh.request('/api/statements/generate', { body: { period } });
+      const id = generated.payload.statements.find((s) => s.partnerId === 'p_alex').id;
+
+      const asDraft = await fresh.request(`/api/statements/${id}`);
+      expect(asDraft.payload.statement.numbers.inFlight).toBe(1);
+
+      // another Alex referral arrives while the statement is still a draft
+      await fresh.request('/api/handover/commit', {
+        body: {
+          record: { clientName: 'Late Arrival', broker: 'Nathan', referredBy: 'p_alex', purpose: 'purchase', loanAmount: 500000, propertyAddress: '9 New St, Lutwyche QLD 4030' },
+          consent: { shareStatus: false, feeDisclosed: false },
+          channel: 'manual',
+        },
+      });
+      const stillDraft = await fresh.request(`/api/statements/${id}`);
+      expect(stillDraft.payload.statement.numbers.inFlight).toBe(2);
+
+      await fresh.request(`/api/statements/${id}/issue`, { body: {} });
+      const issued = await fresh.request(`/api/statements/${id}`);
+      expect(issued.payload.statement.numbers.inFlight).toBe(2);
+
+      // a later arrival does not move an issued statement's numbers
+      await fresh.request('/api/handover/commit', {
+        body: {
+          record: { clientName: 'Even Later', broker: 'Nathan', referredBy: 'p_alex', purpose: 'purchase', loanAmount: 400000, propertyAddress: '11 New St, Lutwyche QLD 4030' },
+          consent: { shareStatus: false, feeDisclosed: false },
+          channel: 'manual',
+        },
+      });
+      const frozen = await fresh.request(`/api/statements/${id}`);
+      expect(frozen.payload.statement.numbers.inFlight).toBe(2);
+    } finally {
+      await fresh.close();
+    }
+  });
+
   it('refuses to void without a reason', async () => {
     const list = await h.request('/api/statements');
     const any = list.payload.statements[0];

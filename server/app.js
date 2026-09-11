@@ -1260,8 +1260,20 @@ export function createApp(deps) {
   }));
 
   function statementDetail(data, statement) {
+    // A draft reports the live five numbers; an issued or paid statement keeps
+    // the numbers it was issued with, because that is what the partner was sent.
+    const numbers = statement.status === 'draft'
+      ? statementNumbers({
+        partnerId: statement.partnerId,
+        deals: data.deals,
+        period: statement.period,
+        today: today(),
+        rules: data.rules,
+      })
+      : statement.numbers;
     return {
       ...statement,
+      numbers,
       partnerName: statement.partnerName || partnerName(data, statement.partnerId),
       periodLabel: statement.periodLabel || monthLabel(statement.period),
       lines: (statement.lines || []).map((l) => ({ ...l })),
